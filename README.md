@@ -1,11 +1,19 @@
-# L6470_Driver project
-This repository contains an embedded software project based on the STM NUCLEO-H743ZI2 evaluation board,
-the expansion board X-NUCLEO-IHM02A1, together with one or two stepper motors compatible with the expansion board.
+# L6470 Motor Driver Software
 
-The X-NUCLEO-IHM02A1 board is equipped with two L6470 motor drivers. The two L6470 drivers are daisy chained.
+This repository contains a software driver implementation (in C) for the L6470 motor driver from STM. 
+
+The L6470 device is a fully integrated microstepping motor driver with motion engine and a SPI interface.
+The L6470 device is suitable for driving two-phase bipolar stepper motors with microstepping, and contains 
+an unique control system with support of up to 1/128 step resolution.
+
+The L6470 driver has a standard 8-bit Serial peripheral interface (SPI) to the host microcontroller (always master). 
+The maximum rate is 5Mbit/s. One option for the L6470 is to place it in a SPI daisy chain configuration to spare
+chip select ($\overline(CS)$) pins on the host microcontroller.
+
+The repository currently contains two files. A single source file (L6470.c) and a header file (L6470.h)
+
+The driver software in this repository was tested on a STM NUCLEO-H743ZI2 evaluation board together with the X-NUCLEO-IHM02A1
+expansion board and two compatible stepper motors. he X-NUCLEO-IHM02A1 board is equipped with two L6470 motor drivers in a daisy
+chain configuration.
  
-L6470. 
-The driver software for the L6470 motor driver is written i C. A L6470 driver instance can either be instantiated as
-standalone or as daisy chained. If instantiated as standalone, the application commands issued for a driver is send
-immediately (over SPI) to it. If instantiated in a daisy chain configuration, the application commands are created, but it is up
-to the controlling unit when to send it to the driver. 
+
