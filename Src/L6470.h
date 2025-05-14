@@ -153,6 +153,8 @@ void L6470_HardHiZ(sL6470_t* const p_driver);
 void L6470_GetStatus(sL6470_t* const p_driver);
 
 /* L6470 utility functions for conversions */
+int32_t L6470_AbsPos_2_Position(uint32_t const abs_pos);
+uint32_t L6470_Position_2_AbsPos(int32_t position);
 float L6470_MaxSpeed_2_Step_s(uint16_t const max_speed);
 uint16_t L6470_Step_s_2_MaxSpeed(float const step_s);
 float L6470_Speed_2_Step_s(uint32_t speed);

@@ -41,6 +41,9 @@
 #include "L6470.h"
 
 /* Definitions ---------------------------------------------------------------*/
+#define L6470_MAX_POSITION          (0x1FFFFF)      // Max position
+#define L6470_MIN_POSITION          (-(0x200000))   // Min position
+#define L6470_POSITION_RANGE        ((uint32_t)(L6470_MAX_POSITION - L6470_MIN_POSITION))
 #define L6470_MAX_SPEED             (0xFFFFF)       // max value of SPEED
 #define L6470_MAX_MAX_SPEED         (0x3FF)         // max value of MAX_SPEED
 #define L6470_MAX_MIN_SPEED         (0xFFF)         // max value of MIN_SPEED
@@ -173,14 +176,16 @@ void L6470_Init(sL6470_t* const p_driver, cbL6470_SpiSend SpiSend)
   */
 void L6470_Nop(sL6470_t* const p_driver)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[NOP].BinaryCode;
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
-	}
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[NOP].BinaryCode;
 
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		}
+	}
 }
 
 /**
@@ -192,13 +197,16 @@ void L6470_Nop(sL6470_t* const p_driver)
   */
 void L6470_SetParam(sL6470_t* const p_driver, const eL6470_Register_Address_t param, const uint32_t value)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[SET_PARAM].BinaryCode | param;
-	HandleTxValue(p_driver->tx_buffer, value, L6470_Register[param].n_bytes);
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 4, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[SET_PARAM].BinaryCode | param;
+		HandleTxValue(p_driver->tx_buffer, value, L6470_Register[param].n_bytes);
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 4, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -210,12 +218,16 @@ void L6470_SetParam(sL6470_t* const p_driver, const eL6470_Register_Address_t pa
   */
 void L6470_GetParam(sL6470_t* const p_driver, const eL6470_Register_Address_t param)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[GET_PARAM].BinaryCode | param;
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 4);
+		memset(p_driver->tx_buffer, 0, 4);
+		memset(p_driver->rx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[GET_PARAM].BinaryCode | param;
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 4);
+		}
 	}
 }
 
@@ -228,13 +240,16 @@ void L6470_GetParam(sL6470_t* const p_driver, const eL6470_Register_Address_t pa
   */
 void L6470_Run(sL6470_t* const p_driver, const eL6470_Direction_t dir, const uint32_t speed)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[RUN].BinaryCode | (dir<<L6470_DIR_BIT_POS);
-	HandleTxValue(p_driver->tx_buffer, speed, 3);
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 4, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[RUN].BinaryCode | (dir<<L6470_DIR_BIT_POS);
+		HandleTxValue(p_driver->tx_buffer, speed, 3);
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 4, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -246,12 +261,15 @@ void L6470_Run(sL6470_t* const p_driver, const eL6470_Direction_t dir, const uin
   */
 void L6470_StepClock(sL6470_t* const p_driver, const eL6470_Direction_t dir)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[STEP_CLOCK].BinaryCode | (dir<<L6470_DIR_BIT_POS);
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[STEP_CLOCK].BinaryCode | (dir<<L6470_DIR_BIT_POS);
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -265,13 +283,16 @@ void L6470_StepClock(sL6470_t* const p_driver, const eL6470_Direction_t dir)
   */
 void L6470_Move(sL6470_t* const p_driver, const eL6470_Direction_t dir, const uint32_t n_step)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[MOVE].BinaryCode | (dir<<L6470_DIR_BIT_POS);
-	HandleTxValue(p_driver->tx_buffer, n_step, 3);
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 4, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[MOVE].BinaryCode | (dir<<L6470_DIR_BIT_POS);
+		HandleTxValue(p_driver->tx_buffer, n_step, 3);
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 4, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -284,13 +305,16 @@ void L6470_Move(sL6470_t* const p_driver, const eL6470_Direction_t dir, const ui
   */
 void L6470_GoTo(sL6470_t* const p_driver, const uint32_t abs_pos)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[GOTO].BinaryCode;
-	HandleTxValue(p_driver->tx_buffer, abs_pos, 3);
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver && abs_pos <= L6470_POSITION_RANGE)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 4, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[GOTO].BinaryCode;
+		HandleTxValue(p_driver->tx_buffer, abs_pos, 3);
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 4, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -304,13 +328,16 @@ void L6470_GoTo(sL6470_t* const p_driver, const uint32_t abs_pos)
   */
 void L6470_GoTo_DIR(sL6470_t* const p_driver, const eL6470_Direction_t dir, const uint32_t abs_pos)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[GOTO_DIR].BinaryCode | (dir<<L6470_DIR_BIT_POS);
-	HandleTxValue(p_driver->tx_buffer, abs_pos, 3);
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver && abs_pos <= L6470_POSITION_RANGE)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 4, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[GOTO_DIR].BinaryCode | (dir<<L6470_DIR_BIT_POS);
+		HandleTxValue(p_driver->tx_buffer, abs_pos, 3);
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 4, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -325,13 +352,16 @@ void L6470_GoTo_DIR(sL6470_t* const p_driver, const eL6470_Direction_t dir, cons
   */
 void L6470_GoUntil(sL6470_t* const p_driver, const eL6470_ACT_t act, const eL6470_Direction_t dir, const uint32_t speed)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[GO_UNTIL].BinaryCode | (dir<<L6470_DIR_BIT_POS) | (act<<L6470_ACT_BIT_POS);
-	HandleTxValue(p_driver->tx_buffer, speed, 3);
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 4, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[GO_UNTIL].BinaryCode | (dir<<L6470_DIR_BIT_POS) | (act<<L6470_ACT_BIT_POS);
+		HandleTxValue(p_driver->tx_buffer, speed, 3);
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 4, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -345,12 +375,15 @@ void L6470_GoUntil(sL6470_t* const p_driver, const eL6470_ACT_t act, const eL647
   */
 void L6470_ReleaseSW(sL6470_t* const p_driver, const eL6470_ACT_t act, const eL6470_Direction_t dir)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[RELEASE_SW].BinaryCode | (dir<<L6470_DIR_BIT_POS) | (act<<L6470_ACT_BIT_POS);
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[RELEASE_SW].BinaryCode | (dir<<L6470_DIR_BIT_POS) | (act<<L6470_ACT_BIT_POS);
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -362,12 +395,15 @@ void L6470_ReleaseSW(sL6470_t* const p_driver, const eL6470_ACT_t act, const eL6
   */
 void L6470_GoHome(sL6470_t* const p_driver)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[GO_HOME].BinaryCode;
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[GO_HOME].BinaryCode;
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -378,12 +414,15 @@ void L6470_GoHome(sL6470_t* const p_driver)
   */
 void L6470_GoMark(sL6470_t* const p_driver)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[GO_MARK].BinaryCode;
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[GO_MARK].BinaryCode;
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -394,12 +433,15 @@ void L6470_GoMark(sL6470_t* const p_driver)
   */
 void L6470_ResetPos(sL6470_t* const p_driver)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[RESET_POS].BinaryCode;
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[RESET_POS].BinaryCode;
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -410,12 +452,15 @@ void L6470_ResetPos(sL6470_t* const p_driver)
   */
 void L6470_ResetDevice(sL6470_t* const p_driver)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[RESET_DEVICE].BinaryCode;
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[RESET_DEVICE].BinaryCode;
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -427,12 +472,15 @@ void L6470_ResetDevice(sL6470_t* const p_driver)
   */
 void L6470_SoftStop(sL6470_t* const p_driver)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[SOFT_STOP].BinaryCode;
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[SOFT_STOP].BinaryCode;
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -444,12 +492,15 @@ void L6470_SoftStop(sL6470_t* const p_driver)
   */
 void L6470_HardStop(sL6470_t* const p_driver)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[HARD_STOP].BinaryCode;
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[HARD_STOP].BinaryCode;
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -461,12 +512,15 @@ void L6470_HardStop(sL6470_t* const p_driver)
   */
 void L6470_SoftHiZ(sL6470_t* const p_driver)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[SOFT_HIZ].BinaryCode;
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[SOFT_HIZ].BinaryCode;
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -478,12 +532,15 @@ void L6470_SoftHiZ(sL6470_t* const p_driver)
   */
 void L6470_HardHiZ(sL6470_t* const p_driver)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[HARD_HIZ].BinaryCode;
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		memset(p_driver->tx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[HARD_HIZ].BinaryCode;
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 0);
+		}
 	}
 }
 
@@ -494,15 +551,40 @@ void L6470_HardHiZ(sL6470_t* const p_driver)
   */
 void L6470_GetStatus(sL6470_t* const p_driver)
 {
-	memset(p_driver->tx_buffer, 0, 4);
-	p_driver->tx_buffer[0] = L6470_ApplicationCommand[GET_STATUS].BinaryCode;
-
-	if (NULL != p_driver->SpiSend)
+	if (NULL != p_driver)
 	{
-		p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 2);
+		memset(p_driver->tx_buffer, 0, 4);
+		memset(p_driver->rx_buffer, 0, 4);
+		p_driver->tx_buffer[0] = L6470_ApplicationCommand[GET_STATUS].BinaryCode;
+
+		if (NULL != p_driver->SpiSend)
+		{
+			p_driver->SpiSend(p_driver->tx_buffer, 1, p_driver->rx_buffer, 2);
+		}
 	}
 }
 
+int32_t L6470_AbsPos_2_Position(uint32_t const abs_pos)
+{
+  if (abs_pos > L6470_MAX_POSITION)
+    return (abs_pos - (L6470_POSITION_RANGE + 1));
+  else
+    return abs_pos;
+}
+
+
+uint32_t L6470_Position_2_AbsPos(int32_t const position)
+{
+  if ((position >= 0) && (position <= L6470_MAX_POSITION))
+    return position;
+  else
+  {
+    if ((position >= L6470_MIN_POSITION) && (position < 0))
+      return (position + (L6470_POSITION_RANGE + 1));
+    else
+      return (L6470_POSITION_RANGE + 1);        // OVF
+  }
+}
 float L6470_MaxSpeed_2_Step_s(uint16_t const max_speed)
 {
   if (max_speed <= L6470_MAX_MAX_SPEED)
