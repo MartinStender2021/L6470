@@ -178,4 +178,8 @@ uint8_t L6470_s_Step_2_FnSlpAcc(float const s_step);
 float L6470_FnSlpDec_2_s_Step(uint8_t const fn_slp_dec);
 uint8_t L6470_s_Step_2_FnSlpDec(float const s_step);
 
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* __L6470_H_ */

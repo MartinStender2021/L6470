@@ -29,7 +29,7 @@ This enables the user to send commands to multiple daisy chained L6470 devices s
 ### ToDo
 - Handle GetStatus response
 - L6470_Config implementation
-- Elaporate on alarms
+- Elaborate on alarms
 
 ## Status
 The released version present is only a draft, and will be updated asap.
