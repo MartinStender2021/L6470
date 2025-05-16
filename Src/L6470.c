@@ -101,59 +101,59 @@ typedef struct {
 } sL6470_ApplicationCommand_t;
 
 /* Function prototypes--------------------------------------------------------*/
-void HandleTxValue(uint8_t * const p_dest, const uint32_t value, const uint8_t length_bytes);
+static void L6470_value_2_tx_buf(uint8_t * const p_dest, const uint32_t value, const uint8_t n_bytes);
 
 /* L6470 Register map & info */
 const sL6470_Register_t L6470_Register[] = {
-  {ABS_POS_REG, 22, 3, 0x000000},  // Current position
-  {EL_POS_REG,  9, 2, 0x000},      // Electrical position
-  {MARK_REG, 22, 3, 0x000000},     // Mark position
-  {SPEED_REG, 20, 3, 0x0000},      // Current speed
-  {ACC_REG, 12, 2, 0x08A},         // Acceleration
-  {DEC_REG, 12, 2, 0x08A},         // Deceleration
-  {MAX_SPEED_REG, 10, 2, 0x041},   // Maximum speed
-  {MIN_SPEED_REG, 13, 2, 0x000},   // Minimum speed
-  {FS_SPD_REG, 10, 2, 0x027},      // Full-step speed
-  {KVAL_HOLD_REG, 8, 1, 0x29},     // Holding KVAL
-  {KVAL_RUN_REG, 8, 1, 0x29},      // Constant speed KVAL
-  {KVAL_ACC_REG, 8, 1, 0x29},      // Acceleration starting KVAL
-  {KVAL_DEC_REG, 8, 1, 0x29},      // Deceleration starting KVAL
-  {INT_SPEED_REG, 14, 2, 0x0408},  // Intersect speed
-  {ST_SLP_REG, 8, 1, 0x19},        // Start slope
-  {FN_SLP_ACC_REG, 8, 1, 0x29},    // Acceleration final slope
-  {FN_SLP_DEC_REG, 8, 1, 0x29},    // Deceleration final slope
-  {K_THERM_REG, 4, 1, 0x0},        // Thermal compensation factor
-  {ADC_OUT_REG, 5, 1, 0x00},       // ADC output, (the reset value is according to startup conditions)
-  {OCD_TH_REG, 4, 1, 0x8},         // OCD threshold
-  {STALL_TH_REG, 7, 1, 0x40},      // STALL threshold
-  {STEP_MODE_REG, 8, 1, 0x7},      // Step mode
-  {ALARM_EN_REG, 8, 1, 0xFF},      // Alarm enable
-  {CONFIG_REG, 16, 2, 0x2E88},     // IC configuration
-  {STATUS_REG, 16, 2, 0x0000}      // Status, (the reset value is according to startup conditions)
+    {0x00,           0,   0,   0x000000},  // Dummy entry (for alignment of register ids)
+    {ABS_POS_REG,   22,   3,   0x000000},  // Current position
+    {EL_POS_REG,     9,   2,      0x000},  // Electrical position
+    {MARK_REG,      22,   3,   0x000000},  // Mark position
+    {SPEED_REG,     20,   3,     0x0000},  // Current speed
+    {ACC_REG,       12,   2,      0x08A},  // Acceleration
+    {DEC_REG,       12,   2,      0x08A},  // Deceleration
+    {MAX_SPEED_REG, 10,   2,      0x041},  // Maximum speed
+    {MIN_SPEED_REG, 13,   2,      0x000},  // Minimum speed
+    {FS_SPD_REG,    10,   2,      0x027},  // Full-step speed
+    {KVAL_HOLD_REG,  8,   1,       0x29},  // Holding KVAL
+    {KVAL_RUN_REG,   8,   1,       0x29},  // Constant speed KVAL
+    {KVAL_ACC_REG,   8,   1,       0x29},  // Acceleration starting KVAL
+    {KVAL_DEC_REG,   8,   1,       0x29},  // Deceleration starting KVAL
+    {INT_SPEED_REG, 14,   2,     0x0408},  // Intersect speed
+    {ST_SLP_REG,     8,   1,       0x19},  // Start slope
+    {FN_SLP_ACC_REG, 8,   1,       0x29},  // Acceleration final slope
+    {FN_SLP_DEC_REG, 8,   1,       0x29},  // Deceleration final slope
+    {K_THERM_REG,    4,   1,        0x0},  // Thermal compensation factor
+    {ADC_OUT_REG,    5,   1,       0x00},  // ADC output, (the reset value is according to startup conditions)
+    {OCD_TH_REG,     4,   1,        0x8},  // OCD threshold
+    {STALL_TH_REG,   7,   1,       0x40},  // STALL threshold
+    {STEP_MODE_REG,  8,   1,        0x7},  // Step mode
+    {ALARM_EN_REG,   8,   1,       0xFF},  // Alarm enable
+    {CONFIG_REG,    16,   2,     0x2E88},  // IC configuration
+    {STATUS_REG,    16,   2,     0x0000}   // Status, (the reset value is according to startup conditions)
 };
-
 
 /* L6470 Application Commands */
 const sL6470_ApplicationCommand_t L6470_ApplicationCommand[] =  {
-  {NOP,          0x00},   // NOP
-  {SET_PARAM,    0x00},   // SetParam
-  {GET_PARAM,    0x20},   // GetParam
-  {RUN,          0x50},   // Run
-  {STEP_CLOCK,   0x58},   // StepClock
-  {MOVE,         0x40},   // Move
-  {GOTO,         0x60},   // GoTo
-  {GOTO_DIR,     0x68},   // GoTo_DIR
-  {GO_UNTIL,     0x82},   // GoToUntil
-  {RELEASE_SW,   0x92},   // ReleaseSW
-  {GO_HOME,      0x70},   // GoHome
-  {GO_MARK,      0x78},   // GoMark
-  {RESET_POS,    0xD8},   // ResetPos
-  {RESET_DEVICE, 0xC0},   // ResetDevice
-  {SOFT_STOP,    0xB0},   // SoftStop
-  {HARD_STOP,    0xB8},   // HardStop
-  {SOFT_HIZ,     0xA0},   // SoftHiZ
-  {HARD_HIZ,     0xA8},   // HardHiZ
-  {GET_STATUS,   0xD0}    // GetStatus
+	{NOP,          0x00},   // NOP
+	{SET_PARAM,    0x00},   // SetParam
+	{GET_PARAM,    0x20},   // GetParam
+	{RUN,          0x50},   // Run
+	{STEP_CLOCK,   0x58},   // StepClock
+	{MOVE,         0x40},   // Move
+	{GOTO,         0x60},   // GoTo
+	{GOTO_DIR,     0x68},   // GoTo_DIR
+	{GO_UNTIL,     0x82},   // GoToUntil
+	{RELEASE_SW,   0x92},   // ReleaseSW
+	{GO_HOME,      0x70},   // GoHome
+	{GO_MARK,      0x78},   // GoMark
+	{RESET_POS,    0xD8},   // ResetPos
+	{RESET_DEVICE, 0xC0},   // ResetDevice
+	{SOFT_STOP,    0xB0},   // SoftStop
+	{HARD_STOP,    0xB8},   // HardStop
+	{SOFT_HIZ,     0xA0},   // SoftHiZ
+	{HARD_HIZ,     0xA8},   // HardHiZ
+	{GET_STATUS,   0xD0}    // GetStatus
 };
 
 void L6470_Init(sL6470_t* const p_driver, cbL6470_SpiSend SpiSend)
@@ -201,7 +201,7 @@ void L6470_SetParam(sL6470_t* const p_driver, const eL6470_Register_Address_t pa
 	{
 		memset(p_driver->tx_buffer, 0, 4);
 		p_driver->tx_buffer[0] = L6470_ApplicationCommand[SET_PARAM].BinaryCode | param;
-		HandleTxValue(p_driver->tx_buffer, value, L6470_Register[param].n_bytes);
+		L6470_value_2_tx_buf(p_driver->tx_buffer, value, L6470_Register[param].n_bytes);
 
 		if (NULL != p_driver->SpiSend)
 		{
@@ -244,7 +244,7 @@ void L6470_Run(sL6470_t* const p_driver, const eL6470_Direction_t dir, const uin
 	{
 		memset(p_driver->tx_buffer, 0, 4);
 		p_driver->tx_buffer[0] = L6470_ApplicationCommand[RUN].BinaryCode | (dir<<L6470_DIR_BIT_POS);
-		HandleTxValue(p_driver->tx_buffer, speed, 3);
+		L6470_value_2_tx_buf(p_driver->tx_buffer, speed, 3);
 
 		if (NULL != p_driver->SpiSend)
 		{
@@ -287,7 +287,7 @@ void L6470_Move(sL6470_t* const p_driver, const eL6470_Direction_t dir, const ui
 	{
 		memset(p_driver->tx_buffer, 0, 4);
 		p_driver->tx_buffer[0] = L6470_ApplicationCommand[MOVE].BinaryCode | (dir<<L6470_DIR_BIT_POS);
-		HandleTxValue(p_driver->tx_buffer, n_step, 3);
+		L6470_value_2_tx_buf(p_driver->tx_buffer, n_step, 3);
 
 		if (NULL != p_driver->SpiSend)
 		{
@@ -309,7 +309,7 @@ void L6470_GoTo(sL6470_t* const p_driver, const uint32_t abs_pos)
 	{
 		memset(p_driver->tx_buffer, 0, 4);
 		p_driver->tx_buffer[0] = L6470_ApplicationCommand[GOTO].BinaryCode;
-		HandleTxValue(p_driver->tx_buffer, abs_pos, 3);
+		L6470_value_2_tx_buf(p_driver->tx_buffer, abs_pos, 3);
 
 		if (NULL != p_driver->SpiSend)
 		{
@@ -332,7 +332,7 @@ void L6470_GoTo_DIR(sL6470_t* const p_driver, const eL6470_Direction_t dir, cons
 	{
 		memset(p_driver->tx_buffer, 0, 4);
 		p_driver->tx_buffer[0] = L6470_ApplicationCommand[GOTO_DIR].BinaryCode | (dir<<L6470_DIR_BIT_POS);
-		HandleTxValue(p_driver->tx_buffer, abs_pos, 3);
+		L6470_value_2_tx_buf(p_driver->tx_buffer, abs_pos, 3);
 
 		if (NULL != p_driver->SpiSend)
 		{
@@ -356,7 +356,7 @@ void L6470_GoUntil(sL6470_t* const p_driver, const eL6470_ACT_t act, const eL647
 	{
 		memset(p_driver->tx_buffer, 0, 4);
 		p_driver->tx_buffer[0] = L6470_ApplicationCommand[GO_UNTIL].BinaryCode | (dir<<L6470_DIR_BIT_POS) | (act<<L6470_ACT_BIT_POS);
-		HandleTxValue(p_driver->tx_buffer, speed, 3);
+		L6470_value_2_tx_buf(p_driver->tx_buffer, speed, 3);
 
 		if (NULL != p_driver->SpiSend)
 		{
@@ -569,14 +569,14 @@ int32_t L6470_AbsPos_2_Position(uint32_t const abs_pos)
   if (abs_pos > L6470_MAX_POSITION)
     return (abs_pos - (L6470_POSITION_RANGE + 1));
   else
-    return abs_pos;
+    return (abs_pos);
 }
 
 
 uint32_t L6470_Position_2_AbsPos(int32_t const position)
 {
   if ((position >= 0) && (position <= L6470_MAX_POSITION))
-    return position;
+    return (position);
   else
   {
     if ((position >= L6470_MIN_POSITION) && (position < 0))
@@ -590,7 +590,7 @@ float L6470_MaxSpeed_2_Step_s(uint16_t const max_speed)
   if (max_speed <= L6470_MAX_MAX_SPEED)
     return (max_speed * ((float)15.2588));
   else
-    return 0;
+    return (0);
 }
 
 uint16_t L6470_Step_s_2_MaxSpeed(float const step_s)
@@ -598,7 +598,7 @@ uint16_t L6470_Step_s_2_MaxSpeed(float const step_s)
   if (step_s <= (L6470_MAX_MAX_SPEED * ((float)15.2588)))
     return (uint16_t)(step_s / ((float)15.2588));
   else
-    return 0;
+    return (0);
 }
 
 float L6470_Speed_2_Step_s(uint32_t speed)
@@ -611,7 +611,7 @@ uint32_t L6470_Step_s_2_Speed(float step_s)
   if (step_s <= (L6470_MAX_SPEED * ((float)14.9012e-3)))
     return (uint32_t)(step_s / ((float)14.9012e-3));
   else
-    return 0;
+    return (0);
 }
 
 float L6470_OcdTh_2_mA(uint8_t ocd_th)
@@ -619,12 +619,13 @@ float L6470_OcdTh_2_mA(uint8_t ocd_th)
   if (ocd_th <= L6470_MAX_OCD_TH)
     return ((ocd_th+1) * ((float)375));
   else
-    return 0;
+    return (0);
 }
 
 uint8_t L6470_mA_2_OcdTh(const float mA)
 {
-  float result, decimal;
+  float result;
+  float decimal;
 
   if (mA <= ((L6470_MAX_OCD_TH+1) * ((float)375)))
   {
@@ -637,7 +638,7 @@ uint8_t L6470_mA_2_OcdTh(const float mA)
       return ((uint8_t)result);
   }
   else
-    return 0;
+    return (0);
 }
 
 float L6470_StallTh_2_mA(uint8_t stall_th)
@@ -645,12 +646,13 @@ float L6470_StallTh_2_mA(uint8_t stall_th)
   if (stall_th <= L6470_MAX_STALL_TH)
     return ((stall_th+1) * ((float)31.25));
   else
-    return 0;
+    return (0);
 }
 
 uint8_t L6470_mA_2_StallTh(const float mA)
 {
-  float result, decimal;
+  float result;
+  float decimal;
 
   if (mA <= ((L6470_MAX_STALL_TH+1) * ((float)31.25)))
   {
@@ -663,7 +665,7 @@ uint8_t L6470_mA_2_StallTh(const float mA)
       return ((uint8_t)result);
   }
   else
-    return 0;
+    return (0);
 }
 
 float L6470_Acc_2_Step_s2(uint16_t const acc)
@@ -671,23 +673,23 @@ float L6470_Acc_2_Step_s2(uint16_t const acc)
   if (acc <= L6470_MAX_ACC)
     return (acc * ((float)1.4552e1));
   else
-    return 0;
+    return (0);
 }
 
 uint16_t L6470_Step_s2_2_Acc(float const step_s2)
 {
-  if (step_s2 <= (L6470_MAX_ACC * ((float)1.4552e1)))
-    return (uint16_t)(step_s2 / ((float)1.4552e1));
-  else
-    return 0;
+	if (step_s2 <= (L6470_MAX_ACC * ((float)1.4552e1)))
+		return (uint16_t)(step_s2 / ((float)1.4552e1));
+	else
+		return (0);
 }
 
 float L6470_Dec_2_Step_s2(uint16_t const dec)
 {
-  if (dec <= L6470_MAX_DEC)
-    return (dec * ((float)1.4552e1));
-  else
-    return 0;
+	if (dec <= L6470_MAX_DEC)
+		return (dec * ((float)1.4552e1));
+	else
+		return (0);
 }
 
 uint16_t L6470_Step_s2_2_Dec(float const step_s2)
@@ -695,7 +697,7 @@ uint16_t L6470_Step_s2_2_Dec(float const step_s2)
   if (step_s2 <= (L6470_MAX_DEC * ((float)1.4552e1)))
 	  return (uint16_t)(step_s2 / ((float)1.4552e1));
   else
-	  return 0;
+	  return (0);
 }
 
 float L6470_FsSpd_2_Step_s(uint16_t const fs_spd)
@@ -703,15 +705,15 @@ float L6470_FsSpd_2_Step_s(uint16_t const fs_spd)
 	if (fs_spd <= L6470_MAX_FS_SPD)
 	    return ((fs_spd+0.5) * ((float)15.25));
 	else
-	    return 0;
+	    return (0);
 }
 
 uint16_t L6470_Step_s_2_FsSpd(float const step_s)
 {
 	if (step_s <= ((L6470_MAX_FS_SPD+0.5) * ((float)15.25)))
-	    return (uint16_t)((float)(step_s / ((float)15.25)) - (float)0.5);
+	    return (uint16_t)(((float)(step_s / ((float)15.25)) - (float)0.5));
 	else
-	    return 0;
+	    return (0);
 }
 
 float L6470_IntSpeed_2_Step_s(uint16_t const int_speed)
@@ -719,7 +721,7 @@ float L6470_IntSpeed_2_Step_s(uint16_t const int_speed)
 	if (int_speed <= L6470_MAX_INT_SPEED)
 	    return (int_speed * ((float)59.6046e-3));
 	else
-	    return 0;
+	    return (0);
 }
 
 uint16_t L6470_Step_s_2_IntSpeed(float const step_s)
@@ -727,7 +729,7 @@ uint16_t L6470_Step_s_2_IntSpeed(float const step_s)
 	if (step_s <= (L6470_MAX_INT_SPEED * ((float)59.6046e-3)))
 	    return (uint16_t)(step_s / ((float)59.6046e-3));
 	else
-	    return 0;
+	    return (0);
 }
 
 float L6470_StSlp_2_s_Step(uint8_t const st_slp)
@@ -740,7 +742,7 @@ uint8_t L6470_s_Step_2_StSlp(float const s_step)
 	if (s_step <= (L6470_MAX_ST_SLP * ((float)1.5686e-5)))
 		return (uint8_t)(s_step / ((float)1.5686e-5));
 	else
-	    return 0;
+	    return (0);
 }
 
 float L6470_FnSlpAcc_2_s_Step(uint8_t const fn_slp_acc)
@@ -753,7 +755,7 @@ uint8_t L6470_s_Step_2_FnSlpAcc(float const s_step)
 	if (s_step <= (L6470_MAX_FN_SLP_ACC * ((float)1.5686e-5)))
 	    return (uint8_t)(s_step / ((float)1.5686e-5));
 	else
-	    return 0;
+	    return (0);
 }
 
 float L6470_FnSlpDec_2_s_Step(uint8_t const fn_slp_dec)
@@ -763,30 +765,31 @@ float L6470_FnSlpDec_2_s_Step(uint8_t const fn_slp_dec)
 
 uint8_t L6470_s_Step_2_FnSlpDec(float const s_step)
 {
-	  if (s_step <= (L6470_MAX_FN_SLP_DEC * ((float)1.5686e-5)))
-	    return (uint8_t)(s_step / ((float)1.5686e-5));
-	  else
-	    return 0;
+	if (s_step <= (L6470_MAX_FN_SLP_DEC * ((float)1.5686e-5)))
+		return ((uint8_t)(s_step / ((float)1.5686e-5)));
+	else
+	    return (0);
 }
 
-void HandleTxValue(uint8_t * const p_dest, const uint32_t value, const uint8_t length_bytes)
+static void L6470_value_2_tx_buf(uint8_t * const p_dest, const uint32_t value, const uint8_t n_bytes)
 {
-	if (length_bytes == 3)
+	if (n_bytes == 3)
 	{
 		p_dest[1] = (value >> 16) & 0xFF;
 		p_dest[2] = (value >> 8) & 0xFF;
 		p_dest[3] = value & 0xFF;
 	}
-	if (length_bytes == 2)
+	if (n_bytes == 2)
 	{
 		p_dest[1] = (value >> 8) & 0xFF;
 		p_dest[2] = value & 0xFF;
 		p_dest[3] = 0x00;
 	}
-	if (length_bytes == 1)
+	if (n_bytes == 1)
 	{
 		p_dest[1] = value & 0xFF;
 		p_dest[2] = 0x00;
 		p_dest[3] = 0x00;
 	}
 }
+
