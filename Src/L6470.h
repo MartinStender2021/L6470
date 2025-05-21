@@ -52,7 +52,7 @@
 #define SET_STEP_MODE_SYNC_EN_BIT     (0x80)
 
  /* Type definitions ----------------------------------------------------------*/
- typedef void (*cbL6470_SpiSend)(const uint8_t * const p_tx,
+ typedef void (*cbL6470_SpiTxNow)(const uint8_t * const p_tx,
 		 	 	 	 	 	 	 uint8_t const n_tx,
 								 const uint8_t * const p_rx,
 								 uint8_t const n_rx);
@@ -61,7 +61,7 @@ typedef struct
 {
 	uint8_t tx_buffer[4];
 	uint8_t rx_buffer[4];
-	cbL6470_SpiSend SpiSend;
+	cbL6470_SpiTxNow SpiTxNow;
 } sL6470_t;
 
 typedef enum
@@ -128,13 +128,21 @@ typedef enum
 	WRONG_COMMAND_ALARM = 0x80,
 }eL6470_Alarm_t;
 
-void L6470_Init(sL6470_t* const p_driver, cbL6470_SpiSend SpiSend);
+typedef enum
+{
+	MOTOR_STOPPED = 0x00,
+	MOTOR_ACCELERATION = 0x01,
+	MOTOR_DECELERATION = 0x02,
+	MOTOR_CONSTANT_SPEED = 0x03,
+}eL6470_MotorStatus_t;
+
+void L6470_Init(sL6470_t* const p_driver, cbL6470_SpiTxNow SpiSend);
 void L6470_Config(void);
 
 /* L6470 Application Commands */
 void L6470_Nop(sL6470_t* const p_driver);
 void L6470_SetParam(sL6470_t* const p_driver, const eL6470_Register_Address_t param, const uint32_t value);
-void L6470_GetParam(sL6470_t* const p_driver, const eL6470_Register_Address_t param);
+uint32_t L6470_GetParam(sL6470_t* const p_driver, const eL6470_Register_Address_t param);
 void L6470_Run(sL6470_t* const p_driver, const eL6470_Direction_t dir, const uint32_t speed);
 void L6470_StepClock(sL6470_t* const p_driver, const eL6470_Direction_t dir);
 void L6470_Move(sL6470_t* const p_driver, const eL6470_Direction_t dir, const uint32_t n_step);
@@ -150,7 +158,7 @@ void L6470_SoftStop(sL6470_t* const p_driver);
 void L6470_HardStop(sL6470_t* const p_driver);
 void L6470_SoftHiZ(sL6470_t* const p_driver);
 void L6470_HardHiZ(sL6470_t* const p_driver);
-void L6470_GetStatus(sL6470_t* const p_driver);
+uint16_t L6470_GetStatus(sL6470_t* const p_driver);
 
 /* L6470 utility functions for conversions */
 int32_t L6470_AbsPos_2_Position(uint32_t const abs_pos);
@@ -177,6 +185,11 @@ float L6470_FnSlpAcc_2_s_Step(uint8_t const fn_slp_acc);
 uint8_t L6470_s_Step_2_FnSlpAcc(float const s_step);
 float L6470_FnSlpDec_2_s_Step(uint8_t const fn_slp_dec);
 uint8_t L6470_s_Step_2_FnSlpDec(float const s_step);
+
+eL6470_MotorStatus_t L6470_GetMotorStatus(sL6470_t * const p_driver);
+void L6470_DisableAlarm(sL6470_t* const p_driver, const eL6470_Alarm_t alarm);
+void L6470_EnableAlarm(sL6470_t* const p_driver, const eL6470_Alarm_t alarm);
+uint32_t L6470_GetResponse(sL6470_t* const p_driver, const eL6470_Register_Address_t param);
 
 #ifdef __cplusplus
 }
